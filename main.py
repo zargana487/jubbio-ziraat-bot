@@ -26,11 +26,11 @@ def keep_alive():
 keep_alive()
 
 # ==========================================
-# 1. BOT AYARLARI VE VERİBATANI
+# 1. BOT AYARLARI VE VERİTABANI
 # ==========================================
-# Render paneline eklediğin TOKEN'ı buraya çekiyoruz
+# Render'daki TOKEN'ı çekiyoruz, yoksa koddakini kullanır
 BOT_TOKEN = os.environ.get("TOKEN", "27d738ca9cb36dd04a692dee55ae25a27d81761d9c07ef54e7c83e0008a89d63")
-API_URL = "https://gateway.jubbio.com/api/v1" # Canlı Jubbio API adresi güncellendi
+API_URL = "https://gateway.jubbio.com/api/v1"
 
 KURUCU_ID = "27767" 
 admin_listesi = [KURUCU_ID]
@@ -50,12 +50,12 @@ def mesaj_gonder(channel_id, icerik):
         url = f"{API_URL}/channels/{channel_id}/messages"
         headers = {"Authorization": f"Bot {BOT_TOKEN}", "Content-Type": "application/json"}
         payload = {"content": icerik}
-        requests.post(url, json=payload, headers=headers)
+        res = requests.post(url, json=payload, headers=headers)
     except:
         pass
 
 # ==========================================
-# 2. KOMUT İŞLEYİCİSİ (COMMAND HANDLER)
+# 2. KOMUT İŞLEYİCİSİ (HATALAR DÜZELTİLDİ)
 # ==========================================
 def komutlari_isle(msg_data):
     try:
@@ -73,6 +73,9 @@ def komutlari_isle(msg_data):
 
         hesap_kontrol(user_id, username)
         parcalar = content.split()
+        if not parcalar:
+            return
+            
         komut = parcalar[0].lower()
 
         # ---- /zhelp KOMUTU ----
@@ -187,8 +190,8 @@ def komutlari_isle(msg_data):
             except:
                 pass
 
-    except:
-        pass
+    except Exception as e:
+        print(f"Hata: {e}")
 
 # ==========================================
 # 3. KESİNTİSİZ DÖNGÜ SİSTEMİ
@@ -197,11 +200,10 @@ def bot_dongusu():
     son_mesaj_id = None
     headers = {"Authorization": f"Bot {BOT_TOKEN}"}
     print("🤖 Ziraat Bankası Ekonomi Botu Başlatıldı!")
-    print("📡 Jubbio ağ geçidi aktif, komutlar bekleniyor...")
     
     while True:
         try:
-            # Jubbio API endpoint'i en güncel gateway adresine çekildi
+            # Jubbio API üzerinden botun kendi kanal mesajlarını dinleme endpointi
             response = requests.get(f"{API_URL}/users/@me/messages?limit=1", headers=headers, timeout=5)
             if response.status_code == 200:
                 mesajlar = response.json()
@@ -212,7 +214,7 @@ def bot_dongusu():
                         son_mesaj_id = msg_id
                         komutlari_isle(en_yeni_mesaj)
         except Exception as e:
-            print(f"Bağlantı Hatası: {e}")
+            pass
         time.sleep(0.5)
 
 if __name__ == "__main__":

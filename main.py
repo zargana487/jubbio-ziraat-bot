@@ -23,20 +23,18 @@ def keep_alive():
     t = Thread(target=run)
     t.start()
 
-# Sunucuyu bot döngüsünden önce arka planda başlatıyoruz
 keep_alive()
 
 # ==========================================
-# 1. BOT AYARLARI VE VERİTABANI
+# 1. BOT AYARLARI VE VERİBATANI
 # ==========================================
-# Token'ı Render'a eklediğin "Environment" kısmından güvenli bir şekilde çekiyoruz
+# Render paneline eklediğin TOKEN'ı buraya çekiyoruz
 BOT_TOKEN = os.environ.get("TOKEN", "27d738ca9cb36dd04a692dee55ae25a27d81761d9c07ef54e7c83e0008a89d63")
-API_URL = "https://jubbio.com"
+API_URL = "https://gateway.jubbio.com/api/v1" # Canlı Jubbio API adresi güncellendi
 
 KURUCU_ID = "27767" 
 admin_listesi = [KURUCU_ID]
 
-# ZCoin Veritabanı
 banka_hesaplari = {}
 
 def hesap_kontrol(user_id, username):
@@ -203,6 +201,7 @@ def bot_dongusu():
     
     while True:
         try:
+            # Jubbio API endpoint'i en güncel gateway adresine çekildi
             response = requests.get(f"{API_URL}/users/@me/messages?limit=1", headers=headers, timeout=5)
             if response.status_code == 200:
                 mesajlar = response.json()
@@ -212,8 +211,8 @@ def bot_dongusu():
                     if msg_id != son_mesaj_id:
                         son_mesaj_id = msg_id
                         komutlari_isle(en_yeni_mesaj)
-        except:
-            pass
+        except Exception as e:
+            print(f"Bağlantı Hatası: {e}")
         time.sleep(0.5)
 
 if __name__ == "__main__":
